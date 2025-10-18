@@ -6,6 +6,9 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from pathlib import Path
+import uuid
 
 from .codegen import generate_script
 from .executor import execute_script
@@ -21,6 +24,11 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Static artifacts mount
+ARTIFACTS_ROOT = Path("artifacts").resolve()
+ARTIFACTS_ROOT.mkdir(parents=True, exist_ok=True)
+app.mount("/artifacts", StaticFiles(directory=str(ARTIFACTS_ROOT)), name="artifacts")
 
 
 # Request/Response models aligned with frontend/src/lib/api.ts
@@ -105,12 +113,38 @@ async def api_generate(req: GenerateRequest) -> GenerateResponse:
 async def api_execute(req: ExecuteRequest):
     # If client can handle streaming logs, we could stream stdout here. For now, run and return JSON.
     try:
+        # Create a unique run directory under artifacts to avoid mixing outputs
+        run_id = uuid.uuid4().hex
+        run_dir = ARTIFACTS_ROOT / run_id
+        run_dir.mkdir(parents=True, exist_ok=True)
+
         result = execute_script(
             req.scriptPath,
-            env={"AIDA_INPUT": req.env.AIDA_INPUT, "AIDA_OUTPUT": req.env.AIDA_OUTPUT},
+            env={
+                "AIDA_INPUT": req.env.AIDA_INPUT,
+                "AIDA_OUTPUT": str(run_dir),
+            },
             use_uv=True,
         )
-        return JSONResponse(content={"artifacts": result["artifacts"]})
+        # Rewrite artifact filesystem paths to web URLs under /artifacts/{run_id}/...
+        rewritten: list[dict] = []
+        for a in result.get("artifacts", []):
+            try:
+                p = Path(a.get("path", "")).resolve()
+                # Ensure path is inside run_dir
+                rel = p.relative_to(run_dir)
+                url_path = f"/artifacts/{run_id}/{rel.as_posix()}"
+                rewritten.append(
+                    {
+                        "type": a.get("type", "html"),
+                        "path": url_path,
+                        "title": a.get("title"),
+                    }
+                )
+            except Exception:
+                # Fallback: do not expose arbitrary paths; skip
+                continue
+        return JSONResponse(content={"artifacts": rewritten})
     except RuntimeError as e:
         # e.args[0] may already include a JSON payload from executor
         try:

@@ -1,16 +1,16 @@
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select } from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type {
   ExecuteResponse,
   FileFormat,
   GenerateResponse,
   InspectResponse,
 } from "@/lib/api";
-import { apiExecute, apiGenerate, apiInspect } from "@/lib/api";
+import { apiExecute, apiGenerate, apiInspect, artifactUrl } from "@/lib/api";
 
 type AnalyzerState =
   | { kind: "idle" }
@@ -72,10 +72,15 @@ export function DataAnalyzer() {
           </div>
           <div className="grid gap-2">
             <Label htmlFor="format">Format</Label>
-            <Select id="format" value={format} onChange={e => setFormat(e.target.value as FileFormat)}>
-              <option value="csv">csv</option>
-              <option value="parquet">parquet</option>
-              <option value="json">json</option>
+            <Select value={format} onValueChange={v => setFormat(v as FileFormat)}>
+              <SelectTrigger id="format">
+                <SelectValue placeholder="Select format" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="csv">csv</SelectItem>
+                <SelectItem value="parquet">parquet</SelectItem>
+                <SelectItem value="json">json</SelectItem>
+              </SelectContent>
             </Select>
           </div>
           <div className="grid md:grid-cols-3 gap-4">
@@ -89,17 +94,27 @@ export function DataAnalyzer() {
             </div>
             <div className="grid gap-2">
               <Label htmlFor="engine">Engine</Label>
-              <Select id="engine" value={engine} onChange={e => setEngine(e.target.value as "pandas" | "polars")}> 
-                <option value="pandas">pandas</option>
-                <option value="polars">polars</option>
+              <Select value={engine} onValueChange={v => setEngine(v as "pandas" | "polars")}>
+                <SelectTrigger id="engine">
+                  <SelectValue placeholder="Select engine" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="pandas">pandas</SelectItem>
+                  <SelectItem value="polars">polars</SelectItem>
+                </SelectContent>
               </Select>
             </div>
           </div>
           <div className="grid gap-2">
             <Label htmlFor="viz">Viz Library</Label>
-            <Select id="viz" value={viz} onChange={e => setViz(e.target.value as "plotly" | "seaborn")}> 
-              <option value="plotly">plotly</option>
-              <option value="seaborn">seaborn</option>
+            <Select value={viz} onValueChange={v => setViz(v as "plotly" | "seaborn")}>
+              <SelectTrigger id="viz">
+                <SelectValue placeholder="Select viz lib" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="plotly">plotly</SelectItem>
+                <SelectItem value="seaborn">seaborn</SelectItem>
+              </SelectContent>
             </Select>
           </div>
 
@@ -165,13 +180,37 @@ export function DataAnalyzer() {
 
             <h2 className="text-2xl font-semibold">Results Panel</h2>
             {state.kind === "succeeded" ? (
-              <div className="grid gap-2">
-                {(state.result.artifacts ?? []).map((a, i) => (
-                  <div key={i} className="text-sm">
-                    <span className="font-medium">{a.title ?? a.path}</span>
-                    <span className="text-muted-foreground"> — {a.type}</span>
-                  </div>
-                ))}
+              <div className="grid gap-4">
+                {(state.result.artifacts ?? []).map((a, i) => {
+                  const url = artifactUrl(a.path);
+                  const title = a.title ?? a.path;
+                  const t = (a.type || "").toLowerCase();
+                  const isImage = t.startsWith("image/") || ["png", "jpg", "jpeg", "gif", "webp"].some(ext => a.path.toLowerCase().endsWith(ext));
+                  const isHtml = t === "html" || a.path.toLowerCase().endsWith(".html");
+                  const isCsv = t === "text/csv" || a.path.toLowerCase().endsWith(".csv");
+                  const isJson = t === "application/json" || a.path.toLowerCase().endsWith(".json");
+                  return (
+                    <div key={i} className="grid gap-2">
+                      <div className="text-sm font-medium flex items-center gap-2">
+                        <span>{title}</span>
+                        <a className="text-blue-600 hover:underline" href={url} target="_blank" rel="noreferrer">Open</a>
+                        <span className="text-muted-foreground">{a.type}</span>
+                      </div>
+                      {isHtml ? (
+                        <iframe title={title} src={url} className="w-full h-[480px] border rounded-md" />
+                      ) : isImage ? (
+                        <img src={url} alt={title} className="max-w-full rounded-md border" />
+                      ) : isCsv || isJson ? (
+                        <div className="overflow-auto max-h-96 bg-muted p-3 rounded-md text-xs">
+                          {/* Lazy fetch and preview of small text files */}
+                          <ArtifactTextPreview url={url} />
+                        </div>
+                      ) : (
+                        <div className="text-sm text-muted-foreground">Preview not available. Use Open to view.</div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             ) : (
               <p className="text-muted-foreground">No results yet.</p>
@@ -194,3 +233,30 @@ export function DataAnalyzer() {
 export default DataAnalyzer;
 
 
+
+function ArtifactTextPreview({ url }: { url: string }) {
+  const [content, setContent] = useState<string>("Loading...");
+  useEffect(() => {
+    let isActive = true;
+    const controller = new AbortController();
+    const fetchPreview = async () => {
+      try {
+        const resp = await fetch(url, { signal: controller.signal });
+        const text = await resp.text();
+        if (!isActive) return;
+        // Limit preview to ~200KB to avoid freezing the UI
+        const maxChars = 200_000;
+        setContent(text.length > maxChars ? text.slice(0, maxChars) + "\n…\n(truncated)" : text);
+      } catch (e) {
+        if (!isActive) return;
+        setContent(String(e));
+      }
+    };
+    fetchPreview();
+    return () => {
+      isActive = false;
+      controller.abort();
+    };
+  }, [url]);
+  return <pre className="whitespace-pre-wrap">{content}</pre>;
+}

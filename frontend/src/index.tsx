@@ -6,6 +6,42 @@ const server = serve({
     // Serve index.html for all unmatched routes.
     "/*": index,
 
+    "/api/inspect": {
+      async POST(req) {
+        const body = await req.json();
+        const upstream = await fetch("http://localhost:8099/api/inspect", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+        return upstream;
+      },
+    },
+
+    "/api/generate": {
+      async POST(req) {
+        const body = await req.json();
+        const upstream = await fetch("http://localhost:8099/api/generate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+        return upstream;
+      },
+    },
+
+    "/api/execute": {
+      async POST(req) {
+        const body = await req.json();
+        const upstream = await fetch("http://localhost:8099/api/execute", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+        return upstream;
+      },
+    },
+
     "/api/hello": {
       async GET(req) {
         return Response.json({

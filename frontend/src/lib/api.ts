@@ -42,7 +42,12 @@ export type ExecuteResponse = {
   artifacts: Array<{ type: string; path: string; title?: string }>;
 };
 
-const API_BASE = "http://localhost:8099";
+export const API_BASE = "http://localhost:8099";
+
+export function artifactUrl(path: string): string {
+  const normalized = path.startsWith("/") ? path : `/${path}`;
+  return new URL(normalized, API_BASE).toString();
+}
 
 async function http<T>(path: string, init?: RequestInit): Promise<T> {
   const url = new URL(path, API_BASE).toString();

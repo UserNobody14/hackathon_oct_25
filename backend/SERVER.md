@@ -105,7 +105,7 @@ Response body:
 ```json
 {
   "artifacts": [
-    {"type": "html", "path": "artifacts/report.html", "title": "Report"}
+    {"type": "html", "path": "/artifacts/<run_id>/report.html", "title": "Report"}
   ]
 }
 ```
@@ -121,5 +121,6 @@ curl -sS -X POST http://127.0.0.1:8099/api/execute \
 
 ## Notes
 - CORS is enabled for all origins by default for local development.
+- Artifacts are isolated per run under `artifacts/<run_id>/...` and served at `/artifacts/<run_id>/...`.
 - The server shells out to `uv run` to execute generated scripts in the managed environment.
 - For production, tighten CORS and add authentication as needed.
