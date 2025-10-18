@@ -2,9 +2,19 @@ import { serve } from "bun";
 import index from "./index.html";
 
 const server = serve({
+  port: 4371,
   routes: {
     // Serve index.html for all unmatched routes.
     "/*": index,
+
+    // Serve bundled assets in dist if present (handled by Bun)
+
+    // Static sample CSV for tests
+    "/sample.csv": {
+      async GET() {
+        return new Response(Bun.file("../sample.csv"));
+      },
+    },
 
     "/api/inspect": {
       async POST(req) {
@@ -65,13 +75,14 @@ const server = serve({
     },
   },
 
-  development: process.env.NODE_ENV !== "production" && {
-    // Enable browser hot reloading in development
-    hmr: true,
+  development:
+    process.env.NODE_ENV !== "production" && {
+      // Enable browser hot reloading in development
+      hmr: true,
 
-    // Echo console logs from the browser to the server
-    console: true,
-  },
+      // Echo console logs from the browser to the server
+      console: true,
+    },
 });
 
 console.log(`🚀 Server running at ${server.url}`);

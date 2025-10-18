@@ -23,6 +23,7 @@ type AnalyzerState =
 export function DataAnalyzer() {
   const [localFile, setLocalFile] = useState<File | null>(null);
   const [uploadedPath, setUploadedPath] = useState("");
+  const [fileUrl, setFileUrl] = useState("");
   const [format, setFormat] = useState<FileFormat>("csv");
   const [rows, setRows] = useState(1000);
   const [seed, setSeed] = useState(42);
@@ -32,6 +33,37 @@ export function DataAnalyzer() {
 
   const logsEndRef = useRef<HTMLDivElement | null>(null);
   const scrollLogsToBottom = useCallback(() => logsEndRef.current?.scrollIntoView({ behavior: "smooth" }), []);
+
+  const uploadFromSpecificUrl = useCallback(
+    async (u: string) => {
+      try {
+        if (!u) throw new Error("Please enter a file URL.");
+        const response = await fetch(u);
+        if (!response.ok) throw new Error(`Failed to fetch URL: ${response.status}`);
+        const blob = await response.blob();
+        const inferredName = (() => {
+          try {
+            const urlObj = new URL(u);
+            const parts = urlObj.pathname.split("/");
+            const last = parts[parts.length - 1] || "data.csv";
+            return last.includes(".") ? last : `${last}.csv`;
+          } catch {
+            return "data.csv";
+          }
+        })();
+        const mime = blob.type || "text/csv";
+        const syntheticFile = new File([blob], inferredName, { type: mime });
+        const up = await apiUpload(syntheticFile);
+        setUploadedPath(up.path);
+        setLocalFile(syntheticFile);
+        return up.path;
+      } catch (e) {
+        setState({ kind: "failed", error: (e as Error).message });
+        throw e;
+      }
+    },
+    [setUploadedPath, setLocalFile, setState],
+  );
 
   const onInspect = useCallback(async () => {
     try {
@@ -76,6 +108,7 @@ export function DataAnalyzer() {
               id="file"
               type="file"
               accept=".csv,.parquet,.json,.jsonl,application/json,text/csv,application/x-parquet"
+              data-testid="file-input"
               onChange={e => {
                 const f = e.target.files?.[0] ?? null;
                 setLocalFile(f);
@@ -88,6 +121,32 @@ export function DataAnalyzer() {
             {uploadedPath && (
               <div className="text-sm">Uploaded path: <code className="break-all">{uploadedPath}</code></div>
             )}
+          </div>
+
+          <div className="grid gap-2">
+            <Label htmlFor="fileUrl">Upload from URL</Label>
+            <div className="grid md:grid-cols-3 gap-2">
+              <Input
+                id="fileUrl"
+                placeholder="https://example.com/data.csv"
+                value={fileUrl}
+                onChange={e => setFileUrl(e.target.value)}
+              />
+              <Button
+                variant="secondary"
+                onClick={() => uploadFromSpecificUrl(fileUrl)}
+                aria-label="Upload from URL"
+              >
+                Upload URL
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => uploadFromSpecificUrl("/sample.csv")}
+                aria-label="Use sample.csv"
+              >
+                Use sample.csv
+              </Button>
+            </div>
           </div>
           <div className="grid gap-2">
             <Label htmlFor="format">Format</Label>
