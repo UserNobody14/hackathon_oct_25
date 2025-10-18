@@ -1,0 +1,5 @@
+artifacts/
+.aida/
+scripts/
+.env
+*.pyc

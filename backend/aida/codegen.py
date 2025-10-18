@@ -3,6 +3,14 @@ from __future__ import annotations
 import os
 import time
 from pathlib import Path
+from typing import Optional
+
+from dotenv import load_dotenv
+
+try:
+    from openai import OpenAI  # type: ignore
+except Exception:  # pragma: no cover
+    OpenAI = None  # type: ignore
 
 
 SCRIPT_HEADER = """
@@ -82,11 +90,58 @@ def generate_script(
     prefs: dict | None,
     out_dir: str | os.PathLike[str] = "scripts",
 ) -> dict:
-    # For now, ignore inspect and prefs content and emit a standard deterministic EDA script
     ts = int(time.time())
     out_dir_path = Path(out_dir).resolve()
     out_dir_path.mkdir(parents=True, exist_ok=True)
     script_path = out_dir_path / f"analysis_{ts}.py"
-    script_text = SCRIPT_HEADER
+
+    # Try AI generation if configured; otherwise fall back to static template
+    script_text: str
+    script_text = _try_generate_with_openai(inspect_payload, prefs) or SCRIPT_HEADER
     script_path.write_text(script_text, encoding="utf-8")
     return {"scriptPath": str(script_path), "scriptText": script_text}
+
+
+def _try_generate_with_openai(
+    inspect_payload: dict, prefs: Optional[dict]
+) -> Optional[str]:
+    load_dotenv()
+    provider = os.environ.get("AIDA_MODEL_PROVIDER", "openai").lower()
+    model = os.environ.get("AIDA_MODEL", "gpt-4o-mini")
+    api_key = os.environ.get("OPENAI_API_KEY")
+    if provider != "openai" or not api_key or OpenAI is None:
+        return None
+
+    # Compose messages using prompt_composer
+    try:
+        from .prompt_composer import AnalysisPrefs, build_messages  # local import
+    except Exception:
+        return None
+
+    prefs_obj = AnalysisPrefs(
+        viz=(prefs or {}).get("viz", "plotly"),
+        engine=(prefs or {}).get("engine", "pandas"),
+    )
+    messages = build_messages(inspect_payload or {}, prefs_obj)
+
+    try:
+        client = OpenAI(api_key=api_key)
+        resp = client.chat.completions.create(
+            model=model,
+            messages=[{"role": m["role"], "content": m["content"]} for m in messages],
+            temperature=0.1,
+            max_tokens=4000,
+        )
+        content = resp.choices[0].message.content or ""
+        # Strip code fences if any
+        content = content.strip()
+        if content.startswith("```"):
+            content = content.strip("`\n")
+            # Remove possible language hint line
+            if "\n" in content:
+                first_line, rest = content.split("\n", 1)
+                if first_line.strip().isalpha():
+                    content = rest
+        return content
+    except Exception:
+        return None
