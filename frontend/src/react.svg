@@ -1,8 +1,19 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="-11.5 -10.23174 23 20.46348">
-  <circle cx="0" cy="0" r="2.05" fill="#61dafb"/>
-  <g stroke="#61dafb" stroke-width="1" fill="none">
-    <ellipse rx="11" ry="4.2"/>
-    <ellipse rx="11" ry="4.2" transform="rotate(60)"/>
-    <ellipse rx="11" ry="4.2" transform="rotate(120)"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" aria-labelledby="title desc" role="img">
+  <title id="title">AIDA Mark</title>
+  <desc id="desc">Compact AIDA mark with analytic arcs and central node.</desc>
+  <defs>
+    <linearGradient id="a" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#22d3ee"/>
+      <stop offset="1" stop-color="#3b82f6"/>
+    </linearGradient>
+  </defs>
+  <rect width="32" height="32" rx="6" fill="#0b1220"/>
+  <circle cx="16" cy="16" r="2.6" fill="#60a5fa"/>
+  <g fill="none" stroke="url(#a)" stroke-width="1.6" opacity="0.9">
+    <ellipse cx="16" cy="16" rx="12" ry="4.5"/>
+    <ellipse cx="16" cy="16" rx="12" ry="4.5" transform="rotate(60 16 16)"/>
+    <ellipse cx="16" cy="16" rx="12" ry="4.5" transform="rotate(120 16 16)"/>
   </g>
+  <path d="M8 24 L16 6 L24 24" fill="none" stroke="#e5edff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M11 18 H21" stroke="url(#a)" stroke-width="2" stroke-linecap="round"/>
 </svg>
