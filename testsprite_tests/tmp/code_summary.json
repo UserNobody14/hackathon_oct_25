@@ -1,0 +1,34 @@
+{
+  "tech_stack": [
+    "TypeScript (React + Vite)",
+    "Bun",
+    "Python 3.12",
+    "uv",
+    "Vitest",
+    "Playwright",
+    "Testing Library",
+    "MSW",
+    "pandas",
+    "numpy",
+    "plotly",
+    "pyarrow"
+  ],
+  "features": [
+    {
+      "name": "Project documentation",
+      "description": "High-level design, architecture, workflows, and commands for AIDA.",
+      "files": [
+        "README.md"
+      ]
+    },
+    {
+      "name": "Workspace configuration",
+      "description": "VS Code workspace configuration placeholder.",
+      "files": [
+        "hackathon_oct_25.code-workspace"
+      ]
+    }
+  ]
+}
+
+

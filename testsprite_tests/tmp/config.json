@@ -1,0 +1,16 @@
+{
+  "status": "commited",
+  "type": "frontend",
+  "scope": "codebase",
+  "localEndpoint": "http://localhost:4173",
+  "executionArgs": {
+    "projectName": "hackathon_oct_25",
+    "projectPath": "/Users/benjaminsobel/Code/hackathon_oct_25",
+    "testIds": [],
+    "additionalInstruction": "",
+    "envs": {
+      "API_KEY": "sk-user-dXW_rbcizJKaS8aWAQOascNGneBNV9DO2h2e4r6R1GUxO0CfWottFX1gvXOftL59wgfQ1VG8TJiR7gvdJT29cHSUUZIqKXxdx_uTJ8ryDc_525FOFa7VB_eg_u8TxlevV6k"
+    }
+  },
+  "proxy": "http://901cde69-1881-4650-8cba-06af227987cc:HbYjQZ3uE1CnihL0GXykPjftTF0PPPac@tun.testsprite.com:8080"
+}

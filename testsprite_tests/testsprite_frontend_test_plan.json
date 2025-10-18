@@ -1,0 +1,340 @@
+[
+  {
+    "id": "TC001",
+    "title": "File Upload and Format Detection",
+    "description": "Verify the system correctly uploads local CSV, Parquet, and JSON files and auto-detects file format including handling of delimiter and encoding inference for CSV.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Open the frontend UI and upload a CSV file without specifying format."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the system detects the file as CSV and correctly infers delimiter and encoding."
+      },
+      {
+        "type": "action",
+        "description": "Upload a Parquet data file."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the system detects the file as Parquet and parses schema via pyarrow."
+      },
+      {
+        "type": "action",
+        "description": "Upload a line-delimited JSON file."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the file is detected as JSON and parsed accordingly."
+      },
+      {
+        "type": "action",
+        "description": "Upload a large CSV file beyond recommended size."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify appropriate large file warning is displayed and sampling limits are enforced."
+      }
+    ]
+  },
+  {
+    "id": "TC002",
+    "title": "Data Inspection and Sampling Controls",
+    "description": "Verify schema inference, data sampling strategies (head, tail, random), and profiling are displayed correctly in the inspect panel.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Upload a sample CSV file."
+      },
+      {
+        "type": "action",
+        "description": "View schema and sample rows in the inspect panel."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify schema matches the dataset and sample rows correspond to the sampling strategy 'head' by default."
+      },
+      {
+        "type": "action",
+        "description": "Change sampling strategy to 'tail'."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify sample rows shown correspond to the tail of the data."
+      },
+      {
+        "type": "action",
+        "description": "Change sampling strategy to 'random' and adjust row limits."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify random samples of requested size are displayed."
+      },
+      {
+        "type": "action",
+        "description": "Check displayed profiling statistics for columns."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify basic profiling metrics (e.g., count, unique, mean) are accurate."
+      }
+    ]
+  },
+  {
+    "id": "TC003",
+    "title": "Python Script Generation with LLM",
+    "description": "Verify deterministic and reproducible Python script generation configured by analysis engine (pandas or polars) and visualization library (plotly or seaborn).",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Trigger Python script generation for a given dataset with default configuration."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the generated script matches expected template and is deterministic upon repeated requests."
+      },
+      {
+        "type": "action",
+        "description": "Set configuration to use polars engine and seaborn visualizations."
+      },
+      {
+        "type": "action",
+        "description": "Generate Python script."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify output script uses polars and seaborn libraries accordingly."
+      },
+      {
+        "type": "action",
+        "description": "Save generated script and verify it can be copied or downloaded."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify saved script matches generated content exactly."
+      }
+    ]
+  },
+  {
+    "id": "TC004",
+    "title": "Script Execution and Report Generation",
+    "description": "Verify execution of generated Python scripts in isolated environments produces HTML reports and individual image artifacts with live streaming logs.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Execute a generated Python script via backend execute API."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify isolated environment is used for execution and no contamination occurs."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify live execution logs stream correctly and are displayed in frontend."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify HTML report and image artifacts are generated and linked in results panel."
+      },
+      {
+        "type": "action",
+        "description": "Attempt to execute a script with intentional errors."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify error is caught and displayed gracefully without crashing frontend."
+      }
+    ]
+  },
+  {
+    "id": "TC005",
+    "title": "Frontend UI Accessibility and Keyboard Navigation",
+    "description": "Verify the entire frontend UI supports accessible keyboard navigation, proper ARIA labels, and correct focus order.",
+    "category": "ui",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate through the file upload controls, sampling selector, script generation button, and results panel using keyboard only."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify focus order is logical and consistent."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify all interactive elements have ARIA labels and roles."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify no keyboard traps or focus loss."
+      }
+    ]
+  },
+  {
+    "id": "TC006",
+    "title": "Backend API Communication and Contract Testing",
+    "description": "Verify the backend APIs for inspect, generate, and execute communicate correctly with the frontend and maintain contract correctness including payload formats and streaming behavior.",
+    "category": "integration",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Trigger file inspection via frontend and verify inspect API request payload."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify inspect API response contains correct schema and sampling data."
+      },
+      {
+        "type": "action",
+        "description": "Request script generation via frontend and monitor generate API request and response."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify generated script payload matches expected format."
+      },
+      {
+        "type": "action",
+        "description": "Execute generated script and observe execute API request including isolated environment handling."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify execution logs are streamed and end with final report artifacts info."
+      }
+    ]
+  },
+  {
+    "id": "TC007",
+    "title": "Privacy and Security Validation",
+    "description": "Verify that network egress is prevented by default and that temporary files and paths are properly sanitized and cleaned up post execution.",
+    "category": "security",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Perform script execution with environment variables set to disable external model providers."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify no outbound network calls occur during execution."
+      },
+      {
+        "type": "action",
+        "description": "Check cleanup process after script execution completes."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify all temporary files and directories created for analysis and reports are deleted."
+      }
+    ]
+  },
+  {
+    "id": "TC008",
+    "title": "Performance under Large Data Loads",
+    "description": "Verify performance with virtualized tables, debounced prompt recompositions, and streamed logs work smoothly when dealing with large sample datasets.",
+    "category": "performance",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Upload a large CSV dataset that triggers virtualized table rendering."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify smooth scrolling and fast rendering of sample rows."
+      },
+      {
+        "type": "action",
+        "description": "Change sampling strategy repeatedly and observe debounce effectiveness on re-inspection / prompt recomposition."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify UI remains responsive and does not freeze or excessively reload."
+      },
+      {
+        "type": "action",
+        "description": "Run a script execution to confirm streaming logs update the frontend progressively."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify logs stream without delay and frontend UI updates smoothly."
+      }
+    ]
+  },
+  {
+    "id": "TC009",
+    "title": "Optimistic UI Updates and Session Persistence",
+    "description": "Verify optimistic updates provide instant UI feedback during script generation and execution, and session state persists across page reloads.",
+    "category": "integration",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Start script generation and verify optimistic UI changes show progress immediately."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify UI updates optimistically before actual backend response."
+      },
+      {
+        "type": "action",
+        "description": "Reload the page during or after script execution."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify previous session state (file selection, generated script, results) is restored correctly."
+      }
+    ]
+  },
+  {
+    "id": "TC010",
+    "title": "Error Handling for Invalid File Formats and Backend Failures",
+    "description": "Verify that invalid file uploads and backend failures are handled gracefully with informative error messages and without frontend crashes.",
+    "category": "error handling",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Upload a corrupted or unsupported file format."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify error message is clearly shown and user can retry with valid input."
+      },
+      {
+        "type": "action",
+        "description": "Simulate backend inspect API failure."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify frontend shows appropriate error notification and remains usable."
+      },
+      {
+        "type": "action",
+        "description": "Simulate script generation backend error."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify error handling UI provides retry or cancel options."
+      },
+      {
+        "type": "action",
+        "description": "Simulate execution environment failure or timeout."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify error logs are captured and frontend indicates failure state cleanly."
+      }
+    ]
+  }
+]
