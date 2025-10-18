@@ -46,12 +46,19 @@ async def run_test():
                 pass
         
         # Interact with the page elements to simulate user flow
+        # -> Click the Analyze button to start script generation and verify optimistic UI changes show progress immediately.
+        frame = context.pages[-1]
+        # Click the Analyze button to start script generation and trigger optimistic UI updates
+        elem = frame.locator('xpath=html/body/div').nth(0)
+        await page.wait_for_timeout(3000); await elem.click(timeout=5000)
+        
+
         # --> Assertions to verify final state
         frame = context.pages[-1]
         try:
-            await expect(frame.locator('text=Script generation completed successfully').first).to_be_visible(timeout=30000)
+            await expect(frame.locator('text=Script generation completed successfully').first).to_be_visible(timeout=1000)
         except AssertionError:
-            raise AssertionError('Test case failed: Optimistic UI updates and session state persistence verification did not pass as expected during script generation and page reload.')
+            raise AssertionError('Test case failed: Optimistic UI updates and session state persistence verification failed as the expected success message "Script generation completed successfully" was not found on the page.')
         await asyncio.sleep(5)
     
     finally:

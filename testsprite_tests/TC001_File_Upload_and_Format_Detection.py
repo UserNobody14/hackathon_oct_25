@@ -46,12 +46,64 @@ async def run_test():
                 pass
         
         # Interact with the page elements to simulate user flow
+        # -> Upload a CSV file without specifying format by entering path and clicking Analyze.
+        frame = context.pages[-1]
+        # Focus on the file path input to upload CSV file
+        elem = frame.locator('xpath=html/body/div/div/div/div/div/div/input').nth(0)
+        await page.wait_for_timeout(3000); await elem.click(timeout=5000)
+        
+
+        frame = context.pages[-1]
+        # Input CSV file path without specifying format
+        elem = frame.locator('xpath=html/body/div/div/div/div/div/div/input').nth(0)
+        await page.wait_for_timeout(3000); await elem.fill('/absolute/path/to/data.csv')
+        
+
+        # -> Upload a Parquet file without specifying format and analyze to verify detection and schema parsing.
+        frame = context.pages[-1]
+        # Input Parquet file path without specifying format
+        elem = frame.locator('xpath=html/body/div/div/div/div/div/div/input').nth(0)
+        await page.wait_for_timeout(3000); await elem.fill('/absolute/path/to/data.parquet')
+        
+
+        frame = context.pages[-1]
+        # Click Analyze button to upload and process the Parquet file
+        elem = frame.locator('xpath=html/body/div/div/div/div/div/div[5]/button').nth(0)
+        await page.wait_for_timeout(3000); await elem.click(timeout=5000)
+        
+
+        # -> Upload a line-delimited JSON file without specifying format and analyze to verify detection and parsing.
+        frame = context.pages[-1]
+        # Input JSON file path without specifying format
+        elem = frame.locator('xpath=html/body/div/div/div/div/div/div/input').nth(0)
+        await page.wait_for_timeout(3000); await elem.fill('/absolute/path/to/data.json')
+        
+
+        frame = context.pages[-1]
+        # Click Analyze button to upload and process the JSON file
+        elem = frame.locator('xpath=html/body/div/div/div/div/div/div[5]/button').nth(0)
+        await page.wait_for_timeout(3000); await elem.click(timeout=5000)
+        
+
+        # -> Upload a large CSV file beyond recommended size and analyze to verify large file warning and sampling limits enforcement.
+        frame = context.pages[-1]
+        # Input large CSV file path without specifying format
+        elem = frame.locator('xpath=html/body/div/div/div/div/div/div/input').nth(0)
+        await page.wait_for_timeout(3000); await elem.fill('/absolute/path/to/large_data.csv')
+        
+
+        frame = context.pages[-1]
+        # Click Analyze button to upload and process the large CSV file
+        elem = frame.locator('xpath=html/body/div/div/div/div/div/div[5]/button').nth(0)
+        await page.wait_for_timeout(3000); await elem.click(timeout=5000)
+        
+
         # --> Assertions to verify final state
         frame = context.pages[-1]
         try:
-            await expect(frame.locator('text=File format successfully detected and parsed').first).to_be_visible(timeout=30000)
+            await expect(frame.locator('text=File format successfully detected and parsed').first).to_be_visible(timeout=1000)
         except AssertionError:
-            raise AssertionError("Test case failed: The system did not correctly upload and auto-detect CSV, Parquet, and JSON files, including delimiter and encoding inference for CSV, schema parsing for Parquet, JSON parsing, and large file handling as per the test plan.")
+            raise AssertionError("Test plan execution failed: The system did not correctly upload and auto-detect CSV, Parquet, and JSON files, nor handle delimiter, encoding inference, or large file warnings as expected.")
         await asyncio.sleep(5)
     
     finally:

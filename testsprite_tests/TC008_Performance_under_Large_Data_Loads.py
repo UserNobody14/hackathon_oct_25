@@ -46,12 +46,67 @@ async def run_test():
                 pass
         
         # Interact with the page elements to simulate user flow
+        # -> Input the large CSV dataset path and set rows to 1000, then click Analyze to trigger virtualized table rendering.
+        frame = context.pages[-1]
+        # Input the path to a large CSV dataset to trigger virtualized table rendering
+        elem = frame.locator('xpath=html/body/div/div/div/div/div/div/input').nth(0)
+        await page.wait_for_timeout(3000); await elem.fill('/absolute/path/to/large_dataset.csv')
+        
+
+        # -> Click the Analyze button to start processing the large CSV dataset and trigger virtualized table rendering.
+        frame = context.pages[-1]
+        # Click Analyze button to start processing the large CSV dataset
+        elem = frame.locator('xpath=html/body/div/div/div/div/div/div[5]/button').nth(0)
+        await page.wait_for_timeout(3000); await elem.click(timeout=5000)
+        
+
+        # -> Scroll through the rendered sample rows to verify smooth scrolling and fast rendering.
+        await page.mouse.wheel(0, 500)
+        
+
+        # -> Scroll down further to verify smooth scrolling and fast rendering of sample rows in the virtualized table.
+        await page.mouse.wheel(0, 800)
+        
+
+        # -> Change the sampling strategy repeatedly to observe debounce effectiveness on re-inspection and prompt recomposition.
+        frame = context.pages[-1]
+        # Change seed value to 10 to trigger sampling strategy change
+        elem = frame.locator('xpath=html/body/div/div/div/div/div/div[3]/div[2]/input').nth(0)
+        await page.wait_for_timeout(3000); await elem.fill('10')
+        
+
+        frame = context.pages[-1]
+        # Change seed value to 20 to trigger another sampling strategy change
+        elem = frame.locator('xpath=html/body/div/div/div/div/div/div[3]/div[2]/input').nth(0)
+        await page.wait_for_timeout(3000); await elem.fill('20')
+        
+
+        frame = context.pages[-1]
+        # Change seed value to 30 to trigger another sampling strategy change
+        elem = frame.locator('xpath=html/body/div/div/div/div/div/div[3]/div[2]/input').nth(0)
+        await page.wait_for_timeout(3000); await elem.fill('30')
+        
+
+        # -> Trigger script execution to observe streamed logs and verify progressive frontend updates.
+        frame = context.pages[-1]
+        # Click Analyze button again to trigger script execution and streaming logs
+        elem = frame.locator('xpath=html/body/div/div/div/div/div/div[5]/button').nth(0)
+        await page.wait_for_timeout(3000); await elem.click(timeout=5000)
+        
+
+        # -> Retry triggering script execution to check if streaming logs appear and monitor for HTTP 405 error resolution.
+        frame = context.pages[-1]
+        # Click Analyze button again to retry script execution and streaming logs
+        elem = frame.locator('xpath=html/body/div/div/div/div/div/div[5]/button').nth(0)
+        await page.wait_for_timeout(3000); await elem.click(timeout=5000)
+        
+
         # --> Assertions to verify final state
         frame = context.pages[-1]
         try:
-            await expect(frame.locator('text=Virtualized Table Performance Test Passed').first).to_be_visible(timeout=30000)
+            await expect(frame.locator('text=Virtualized Table Performance Test Passed').first).to_be_visible(timeout=1000)
         except AssertionError:
-            raise AssertionError("Test case failed: Performance with virtualized tables, debounced prompt recompositions, and streamed logs did not work smoothly with large sample datasets as expected.")
+            raise AssertionError('Test plan execution failed: Performance with virtualized tables, debounced prompt recompositions, and streamed logs did not work smoothly with large datasets.')
         await asyncio.sleep(5)
     
     finally:

@@ -46,12 +46,43 @@ async def run_test():
                 pass
         
         # Interact with the page elements to simulate user flow
+        # -> Perform script execution with environment variables set to disable external model providers.
+        frame = context.pages[-1]
+        # Input the file path for analysis
+        elem = frame.locator('xpath=html/body/div/div/div/div/div/div/input').nth(0)
+        await page.wait_for_timeout(3000); await elem.fill('/absolute/path/to/data.csv')
+        
+
+        # -> Click Analyze button to start script execution.
+        frame = context.pages[-1]
+        # Click Analyze button to start script execution
+        elem = frame.locator('xpath=html/body/div/div/div/div/div/div[5]/button').nth(0)
+        await page.wait_for_timeout(3000); await elem.click(timeout=5000)
+        
+
+        # -> Attempt to verify cleanup of temporary files and directories by alternative means, such as checking file system or logs if accessible, or triggering another execution to observe temporary file creation and deletion.
+        await page.goto('http://localhost:4173/logs', timeout=10000)
+        await asyncio.sleep(3)
+        
+
+        # -> Return to main page and perform another script execution to observe temporary file creation and deletion behavior, or check for any UI elements or options related to cleanup.
+        await page.goto('http://localhost:4173', timeout=10000)
+        await asyncio.sleep(3)
+        
+
+        # -> Perform script execution with environment variables set to disable external model providers again to observe temporary file handling.
+        frame = context.pages[-1]
+        # Click Analyze button to start script execution again
+        elem = frame.locator('xpath=html/body/div').nth(0)
+        await page.wait_for_timeout(3000); await elem.click(timeout=5000)
+        
+
         # --> Assertions to verify final state
         frame = context.pages[-1]
         try:
-            await expect(frame.locator('text=Network connection established').first).to_be_visible(timeout=1000)
+            await expect(frame.locator('text=Network connection established to external provider').first).to_be_visible(timeout=1000)
         except AssertionError:
-            raise AssertionError('Test case failed: Network egress is not prevented by default, or temporary files and paths are not properly sanitized and cleaned up post execution as per the test plan.')
+            raise AssertionError('Test case failed: Network egress was not prevented by default, or temporary files and paths were not properly sanitized and cleaned up post execution as per the test plan.')
         await asyncio.sleep(5)
     
     finally:

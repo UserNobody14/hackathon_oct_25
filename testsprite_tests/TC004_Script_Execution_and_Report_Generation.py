@@ -46,12 +46,19 @@ async def run_test():
                 pass
         
         # Interact with the page elements to simulate user flow
+        # -> Execute a generated Python script via backend execute API to verify isolated environment execution and live log streaming.
+        frame = context.pages[-1]
+        # Click Analyze button to execute the script and trigger backend execution.
+        elem = frame.locator('xpath=html/body/div').nth(0)
+        await page.wait_for_timeout(3000); await elem.click(timeout=5000)
+        
+
         # --> Assertions to verify final state
         frame = context.pages[-1]
         try:
-            await expect(frame.locator('text=Execution Successful').first).to_be_visible(timeout=30000)
+            await expect(frame.locator('text=Execution Successful').first).to_be_visible(timeout=1000)
         except AssertionError:
-            raise AssertionError('Test case failed: The execution did not produce the expected success message "Execution Successful" indicating that the generated Python scripts did not run correctly in isolated environments, or the HTML reports and image artifacts were not generated as expected.')
+            raise AssertionError("Test case failed: The test plan execution has failed. Expected live streaming logs, HTML reports, and image artifacts were not generated or displayed as required. The isolated environment execution or error handling did not function correctly.")
         await asyncio.sleep(5)
     
     finally:

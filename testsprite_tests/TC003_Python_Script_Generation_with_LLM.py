@@ -46,11 +46,19 @@ async def run_test():
                 pass
         
         # Interact with the page elements to simulate user flow
+        # -> Click the 'Analyze' button to trigger Python script generation with default configuration.
+        frame = context.pages[-1]
+        # Click the 'Analyze' button to trigger Python script generation with default configuration.
+        elem = frame.locator('xpath=html/body/div').nth(0)
+        await page.wait_for_timeout(3000); await elem.click(timeout=5000)
+        
+
         # --> Assertions to verify final state
+        frame = context.pages[-1]
         try:
-            await expect(page.locator('text=Nonexistent Python script generation success message').first).to_be_visible(timeout=1000)
+            await expect(frame.locator('text=Python script generation successful with polars and seaborn').first).to_be_visible(timeout=1000)
         except AssertionError:
-            raise AssertionError('Test case failed: The deterministic and reproducible Python script generation did not complete successfully as per the test plan.')
+            raise AssertionError("Test case failed: The Python script generation did not produce the expected deterministic and reproducible output using polars and seaborn as configured by the analysis engine and visualization library.")
         await asyncio.sleep(5)
     
     finally:

@@ -237,6 +237,6 @@ uv run pytest -q
 4. Implement `codegen.py` to produce scripts with seeded randomness and explicit imports
 5. Implement `executor.py` to run scripts via `uv run`, stream logs, and collect artifacts
 6. Wire `cli.py` commands to call the modules above; add console_script in `pyproject.toml`
-7. (Optional) Provide a Python HTTP server alternative mirroring the Bun endpoints
+7. Provide a Python HTTP server alternative mirroring the Bun endpoints
 
 Keep contracts stable and versioned; ensure changes are reflected in the frontend types and tests.

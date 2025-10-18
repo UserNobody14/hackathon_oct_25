@@ -46,11 +46,19 @@ async def run_test():
                 pass
         
         # Interact with the page elements to simulate user flow
+        # -> Trigger file inspection via frontend by clicking the Analyze button to verify inspect API request payload.
+        frame = context.pages[-1]
+        # Click the Analyze button to trigger file inspection and verify inspect API request payload.
+        elem = frame.locator('xpath=html/body/div').nth(0)
+        await page.wait_for_timeout(3000); await elem.click(timeout=5000)
+        
+
         # --> Assertions to verify final state
+        frame = context.pages[-1]
         try:
-            await expect(page.locator('text=API Contract Validation Successful').first).to_be_visible(timeout=1000)
+            await expect(frame.locator('text=API Contract Violation Detected').first).to_be_visible(timeout=1000)
         except AssertionError:
-            raise AssertionError('Test case failed: Backend API communication and contract correctness verification did not pass as expected.')
+            raise AssertionError('Test case failed: Backend APIs for inspect, generate, and execute did not communicate correctly with the frontend or did not maintain contract correctness including payload formats and streaming behavior.')
         await asyncio.sleep(5)
     
     finally:

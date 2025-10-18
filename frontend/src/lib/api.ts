@@ -42,8 +42,11 @@ export type ExecuteResponse = {
   artifacts: Array<{ type: string; path: string; title?: string }>;
 };
 
+const API_BASE = "http://localhost:8099";
+
 async function http<T>(path: string, init?: RequestInit): Promise<T> {
-  const resp = await fetch(path, {
+  const url = new URL(path, API_BASE).toString();
+  const resp = await fetch(url, {
     headers: { "Content-Type": "application/json" },
     ...init,
   });
@@ -73,7 +76,8 @@ export async function apiExecute(
   onLog?: (line: string) => void,
 ): Promise<ExecuteResponse> {
   // Attempt to stream logs if server supports text/event-stream; fallback to JSON.
-  const resp = await fetch("/api/execute", {
+  const url = new URL("/api/execute", API_BASE).toString();
+  const resp = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(req),

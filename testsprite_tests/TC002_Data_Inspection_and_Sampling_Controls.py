@@ -46,12 +46,23 @@ async def run_test():
                 pass
         
         # Interact with the page elements to simulate user flow
+        # -> Look for an alternative way to trigger analysis or check if the Analyze button is present under a different element or label.
+        await page.mouse.wheel(0, 200)
+        
+
+        # -> Select the CSV format option to enable the Analyze button.
+        frame = context.pages[-1]
+        # Select the CSV format option to enable the Analyze button
+        elem = frame.locator('xpath=html/body/div/div/div/div/div/div[3]/div/input').nth(0)
+        await page.wait_for_timeout(3000); await elem.click(timeout=5000)
+        
+
         # --> Assertions to verify final state
         frame = context.pages[-1]
         try:
-            await expect(frame.locator('text=Sampling strategy: reverse chronological order').first).to_be_visible(timeout=30000)
+            await expect(frame.locator('text=Schema inference and data sampling verified successfully').first).to_be_visible(timeout=1000)
         except AssertionError:
-            raise AssertionError("Test case failed: The test plan execution failed to verify schema inference, data sampling strategies (head, tail, random), and profiling display in the inspect panel as expected.")
+            raise AssertionError("Test case failed: The schema inference, data sampling strategies (head, tail, random), and profiling are not displayed correctly in the inspect panel as per the test plan.")
         await asyncio.sleep(5)
     
     finally:

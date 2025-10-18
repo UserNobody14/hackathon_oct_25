@@ -46,11 +46,71 @@ async def run_test():
                 pass
         
         # Interact with the page elements to simulate user flow
+        # -> Input a corrupted or unsupported file format path in the file input field to test error handling.
+        frame = context.pages[-1]
+        # Input a corrupted or unsupported file format path in the file input field
+        elem = frame.locator('xpath=html/body/div/div/div/div/div/div/input').nth(0)
+        await page.wait_for_timeout(3000); await elem.fill('/absolute/path/to/corrupted_file.unsupported')
+        
+
+        # -> Click the Analyze button to trigger file upload and observe error handling for corrupted or unsupported file.
+        frame = context.pages[-1]
+        # Click the Analyze button to trigger file upload and test error handling for corrupted or unsupported file.
+        elem = frame.locator('xpath=html/body/div/div/div/div/div/div[5]/button').nth(0)
+        await page.wait_for_timeout(3000); await elem.click(timeout=5000)
+        
+
+        # -> Check if there is a retry option or any user guidance to retry with valid input after the error message.
+        await page.mouse.wheel(0, await page.evaluate('() => window.innerHeight'))
+        
+
+        # -> Simulate backend inspect API failure to verify frontend error notification and usability.
+        await page.goto('http://localhost:4173/api/inspect', timeout=10000)
+        await asyncio.sleep(3)
+        
+
+        # -> Modify the file path input to a valid file path and enable the Analyze button to test backend failure handling.
+        frame = context.pages[-1]
+        # Input a valid file path to enable Analyze button.
+        elem = frame.locator('xpath=html/body/div/div/div/div/div/div/input').nth(0)
+        await page.wait_for_timeout(3000); await elem.fill('/absolute/path/to/data.csv')
+        
+
+        await page.mouse.wheel(0, await page.evaluate('() => window.innerHeight'))
+        
+
+        # -> Attempt to click the Analyze button to see if it triggers the inspect action and observe frontend behavior on backend failure.
+        frame = context.pages[-1]
+        # Click the Analyze button to trigger inspect action and observe frontend behavior on backend failure.
+        elem = frame.locator('xpath=html/body/div/div/div/div/div/div[5]/button').nth(0)
+        await page.wait_for_timeout(3000); await elem.click(timeout=5000)
+        
+
+        # -> Simulate script generation backend error and verify error handling UI provides retry or cancel options.
+        await page.goto('http://localhost:4173/api/generate_script', timeout=10000)
+        await asyncio.sleep(3)
+        
+
+        # -> Modify inputs to enable Analyze button and trigger script generation backend error to verify error handling UI with retry or cancel options.
+        frame = context.pages[-1]
+        # Re-input valid file path to enable Analyze button.
+        elem = frame.locator('xpath=html/body/div/div/div/div/div/div/input').nth(0)
+        await page.wait_for_timeout(3000); await elem.fill('/absolute/path/to/data.csv')
+        
+
+        # -> Simulate execution environment failure or timeout by triggering Analyze action and observe error logs and frontend failure state.
+        frame = context.pages[-1]
+        # Click Analyze button to trigger execution environment failure or timeout and observe error logs and frontend failure state.
+        elem = frame.locator('xpath=html/body/div/div/div/div/div/div[5]/button').nth(0)
+        await page.wait_for_timeout(3000); await elem.click(timeout=5000)
+        
+
         # --> Assertions to verify final state
+        frame = context.pages[-1]
         try:
-            await expect(page.locator('text=File uploaded successfully').first).to_be_visible(timeout=1000)
+            await expect(frame.locator('text=Upload Successful').first).to_be_visible(timeout=1000)
         except AssertionError:
-            raise AssertionError("Test case failed: The test plan requires verifying that invalid file uploads and backend failures are handled gracefully with informative error messages and without frontend crashes. Since this assertion is designed to fail immediately, it confirms the test plan execution failure.")
+            raise AssertionError("Test failed: The test plan requires verifying that invalid file uploads and backend failures are handled gracefully with informative error messages and without frontend crashes. Since this assertion is forced to fail, it indicates the test plan execution has failed.")
         await asyncio.sleep(5)
     
     finally:
