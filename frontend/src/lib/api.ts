@@ -114,4 +114,27 @@ export async function apiExecute(
   return (await resp.json()) as ExecuteResponse;
 }
 
+// Multipart file upload
+export type UploadResponse = {
+  path: string;
+  originalName?: string | null;
+  size?: number | null;
+  mimeType?: string | null;
+};
+
+export async function apiUpload(file: File): Promise<UploadResponse> {
+  const url = new URL("/api/upload", API_BASE).toString();
+  const form = new FormData();
+  form.append("file", file, file.name);
+  const resp = await fetch(url, {
+    method: "POST",
+    body: form,
+  });
+  if (!resp.ok) {
+    const text = await resp.text();
+    throw new Error(`HTTP ${resp.status}: ${text}`);
+  }
+  return (await resp.json()) as UploadResponse;
+}
+
 

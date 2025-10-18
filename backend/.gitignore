@@ -3,3 +3,5 @@ artifacts/
 scripts/
 .env
 *.pyc
+uploads/
+valid_test_data/

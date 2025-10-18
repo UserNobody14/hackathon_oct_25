@@ -14,12 +14,13 @@ An AI-assisted tool that, given a local data file (csv, parquet, json), quickly 
 - Handling exotic formats beyond csv/parquet/json.
 
 ## High‑Level Flow
-1. User selects a file in the UI (or via CLI).
-2. Tool performs lightweight inspection: schema inference, sampling, basic profiling.
-3. A prompt composer builds a context to guide code generation.
-4. An LLM-based generator emits a Python script tailored to the dataset (visualizations, stats, commentary).
-5. The script is saved to disk, then executed to produce artifacts (HTML report and/or images).
-6. Frontend shows the generated script, logs, and visualizations.
+1. User uploads a file in the UI via multipart file upload.
+2. Backend saves it to `uploads/` and returns a server-side absolute path.
+3. Tool performs lightweight inspection: schema inference, sampling, basic profiling.
+4. A prompt composer builds a context to guide code generation.
+5. An LLM-based generator emits a Python script tailored to the dataset (visualizations, stats, commentary).
+6. The script is saved to disk, then executed to produce artifacts (HTML report and/or images).
+7. Frontend shows the generated script, logs, and visualizations.
 
 ## Architecture Overview
 
@@ -39,7 +40,7 @@ An AI-assisted tool that, given a local data file (csv, parquet, json), quickly 
   - OpenAI-compatible, Anthropic-compatible, or local models. Selected via environment variables.
 
 ### Data Flow
-- Frontend uploads path/metadata → Backend `inspector` reads small samples (e.g., 1k rows max) → `prompt_composer` → `codegen` emits `analysis_<timestamp>.py` → `executor` runs with `uv run` → artifacts (HTML, PNGs) → Frontend displays results.
+- Frontend uploads file via multipart → Backend stores file under `uploads/` and returns an absolute path → Backend `inspector` reads small samples (e.g., 1k rows max) → `prompt_composer` → `codegen` emits `analysis_<timestamp>.py` → `executor` runs with `uv run` → artifacts (HTML, PNGs) → Frontend displays results.
 
 ### Supported Formats
 - CSV (delimiter and encoding inference)
@@ -53,7 +54,7 @@ Responsible for the end-to-end UX from file selection to results. Core states:
 - `idle` → `inspecting` → `generating` → `executing` → `succeeded` | `failed`
 
 #### UI Structure
-- **File Input**: Path picker or drag-and-drop; format autodetect with manual override.
+- **File Input**: File chooser (multipart upload); format autodetect with manual override.
 - **Sampling Controls**: strategy (head/tail/random), row limit, seed.
 - **Inspect Panel**: schema preview, sample rows (virtualized table), inferred types, null counts, cardinalities.
 - **Script Panel**: read-only preview of generated Python; copy/download buttons.
@@ -210,11 +211,12 @@ uv run aida analyze --file data/sample.csv --format csv --viz plotly --engine pa
 
 ## Backend API (for Frontend)
 
+- `POST /api/upload` multipart/form-data field `file` → { path, originalName, size, mimeType }
 - `POST /api/inspect` { path, format, rows, seed } → { schema, samplePreview, stats }
 - `POST /api/generate` { inspect, prefs } → { scriptPath, scriptText }
 - `POST /api/execute` { scriptPath, env: { AIDA_INPUT, AIDA_OUTPUT } } → stream(logs) + { artifacts }
 
-Implementation detail: a lightweight Bun server can expose these endpoints and shell out to `uv run` for Python commands.
+Note: The frontend must first upload the file via `/api/upload` and then use the returned `path` for subsequent requests. Passing client-side file paths is not supported for security reasons.
 
 ## Dataset Handling & Safety
 - Never read entire files by default; sample capped rows.

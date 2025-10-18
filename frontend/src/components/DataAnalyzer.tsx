@@ -10,7 +10,7 @@ import type {
   GenerateResponse,
   InspectResponse,
 } from "@/lib/api";
-import { apiExecute, apiGenerate, apiInspect, artifactUrl } from "@/lib/api";
+import { apiExecute, apiGenerate, apiInspect, apiUpload, artifactUrl } from "@/lib/api";
 
 type AnalyzerState =
   | { kind: "idle" }
@@ -21,7 +21,8 @@ type AnalyzerState =
   | { kind: "failed"; error: string };
 
 export function DataAnalyzer() {
-  const [filePath, setFilePath] = useState("");
+  const [localFile, setLocalFile] = useState<File | null>(null);
+  const [uploadedPath, setUploadedPath] = useState("");
   const [format, setFormat] = useState<FileFormat>("csv");
   const [rows, setRows] = useState(1000);
   const [seed, setSeed] = useState(42);
@@ -35,13 +36,21 @@ export function DataAnalyzer() {
   const onInspect = useCallback(async () => {
     try {
       setState({ kind: "inspecting" });
-      const inspect = await apiInspect({ path: filePath, format, rows, seed });
+      // Ensure file is uploaded before inspect
+      let pathToUse = uploadedPath;
+      if (!pathToUse) {
+        if (!localFile) throw new Error("Please select a file to upload.");
+        const up = await apiUpload(localFile);
+        pathToUse = up.path;
+        setUploadedPath(pathToUse);
+      }
+      const inspect = await apiInspect({ path: pathToUse, format, rows, seed });
       setState({ kind: "generating", inspect });
       const script = await apiGenerate({ inspect, prefs: { engine, viz } });
       const logs: string[] = [];
       setState({ kind: "executing", inspect, script, logs });
       const result = await apiExecute(
-        { scriptPath: script.scriptPath, env: { AIDA_INPUT: filePath, AIDA_OUTPUT: "artifacts" } },
+        { scriptPath: script.scriptPath, env: { AIDA_INPUT: pathToUse, AIDA_OUTPUT: "artifacts" } },
         line => {
           logs.push(line);
           setState(s => (s.kind === "executing" ? { ...s, logs: [...logs] } : s));
@@ -52,23 +61,33 @@ export function DataAnalyzer() {
     } catch (e) {
       setState({ kind: "failed", error: (e as Error).message });
     }
-  }, [engine, filePath, format, rows, seed, viz, scrollLogsToBottom]);
+  }, [engine, uploadedPath, localFile, format, rows, seed, viz, scrollLogsToBottom]);
 
-  const disabled = useMemo(() => !filePath || !format || rows <= 0, [filePath, format, rows]);
+  const disabled = useMemo(() => (!localFile && !uploadedPath) || !format || rows <= 0, [localFile, uploadedPath, format, rows]);
 
   return (
     <div className="grid gap-6">
       <Card>
         <CardContent className="pt-6 grid gap-4 text-left">
-          <h2 className="text-2xl font-semibold">File Input</h2>
+          <h2 className="text-2xl font-semibold">File Upload</h2>
           <div className="grid gap-2">
-            <Label htmlFor="file-path">Path</Label>
+            <Label htmlFor="file">Select File</Label>
             <Input
-              id="file-path"
-              placeholder="/absolute/path/to/data.csv"
-              value={filePath}
-              onChange={e => setFilePath(e.target.value)}
+              id="file"
+              type="file"
+              accept=".csv,.parquet,.json,.jsonl,application/json,text/csv,application/x-parquet"
+              onChange={e => {
+                const f = e.target.files?.[0] ?? null;
+                setLocalFile(f);
+                setUploadedPath("");
+              }}
             />
+            {localFile && (
+              <div className="text-sm text-muted-foreground">Selected: {localFile.name} ({(localFile.size / 1024).toFixed(1)} KB)</div>
+            )}
+            {uploadedPath && (
+              <div className="text-sm">Uploaded path: <code className="break-all">{uploadedPath}</code></div>
+            )}
           </div>
           <div className="grid gap-2">
             <Label htmlFor="format">Format</Label>

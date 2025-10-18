@@ -128,13 +128,25 @@ Exit codes and error messages should be explicit and actionable. Commands should
 
 ## HTTP API Contract (for frontend)
 
-Endpoints (served by a lightweight Bun server that shells out to `uv run`, or by a Python HTTP server if preferred):
+Endpoints (served by the FastAPI server):
+
+- POST `/api/upload`
+  - Request: multipart/form-data with field `file`
+  - Response JSON:
+```json
+{
+  "path": "/absolute/path/to/uploads/abc123.csv",
+  "originalName": "sample.csv",
+  "size": 1024,
+  "mimeType": "text/csv"
+}
+```
 
 - POST `/api/inspect`
   - Request JSON:
 ```json
 {
-  "path": "/absolute/path/to/data.csv",
+  "path": "/absolute/path/to/uploads/abc123.csv",
   "format": "csv",
   "rows": 1000,
   "seed": 42
@@ -187,7 +199,7 @@ Endpoints (served by a lightweight Bun server that shells out to `uv run`, or by
 }
 ```
 
-These shapes match the frontend types in `frontend/src/lib/api.ts`.
+These shapes match the frontend types in `frontend/src/lib/api.ts`. Upload the file first, then pass the returned `path` to `/api/inspect` and as `AIDA_INPUT` during `/api/execute`.
 
 ---
 

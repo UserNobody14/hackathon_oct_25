@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 
 from fastapi import FastAPI, HTTPException
+from fastapi import UploadFile, File as FastAPIFile
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 from fastapi.middleware.cors import CORSMiddleware
@@ -29,6 +30,10 @@ app.add_middleware(
 ARTIFACTS_ROOT = Path("artifacts").resolve()
 ARTIFACTS_ROOT.mkdir(parents=True, exist_ok=True)
 app.mount("/artifacts", StaticFiles(directory=str(ARTIFACTS_ROOT)), name="artifacts")
+
+# Uploaded files storage
+UPLOADS_ROOT = Path("uploads").resolve()
+UPLOADS_ROOT.mkdir(parents=True, exist_ok=True)
 
 
 # Request/Response models aligned with frontend/src/lib/api.ts
@@ -89,6 +94,35 @@ async def api_inspect(req: InspectRequest) -> InspectResponse:
         )
     except FileNotFoundError as e:
         raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.post("/api/upload")
+async def api_upload(
+    file: UploadFile = FastAPIFile(...),
+) -> dict[str, str | int | None]:
+    try:
+        # Generate a stable unique filename while preserving extension
+        suffix = Path(file.filename or "").suffix
+        unique_name = f"{uuid.uuid4().hex}{suffix}"
+        dest_path = UPLOADS_ROOT / unique_name
+        # Save file to disk
+        with dest_path.open("wb") as out:
+            while True:
+                chunk = await file.read(1024 * 1024)
+                if not chunk:
+                    break
+                out.write(chunk)
+        # Build response with absolute path for downstream processing
+        abs_path = str(dest_path.resolve())
+        size = dest_path.stat().st_size
+        return {
+            "path": abs_path,
+            "originalName": file.filename,
+            "size": size,
+            "mimeType": file.content_type,
+        }
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
