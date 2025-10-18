@@ -1,0 +1,465 @@
+[
+  {
+    "id": "TC001",
+    "title": "File Upload Success with Valid Data File",
+    "description": "Verify that a valid data file can be successfully uploaded via the multipart POST /api/upload endpoint and that the backend returns a secure file path with correct metadata.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to the File upload page"
+      },
+      {
+        "type": "action",
+        "description": "Select a valid data file (e.g., CSV, Parquet, JSON)"
+      },
+      {
+        "type": "action",
+        "description": "Submit the file using the upload form"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify that the response status is 200 OK"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify that a secure file path and correct metadata (filename, size, content-type) are returned"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the file is stored securely on the backend and accessible via artifact URLs"
+      }
+    ]
+  },
+  {
+    "id": "TC002",
+    "title": "File Upload Failure with Unsupported File Format",
+    "description": "Verify that uploading a file with an unsupported format results in an appropriate error response and the file is not stored.",
+    "category": "error handling",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to the File upload page"
+      },
+      {
+        "type": "action",
+        "description": "Select a file with unsupported format (e.g., .exe, .bat)"
+      },
+      {
+        "type": "action",
+        "description": "Submit the file using the upload form"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify that the response status indicates failure (e.g., 415 Unsupported Media Type)"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify that an error message is presented to the user indicating unsupported file format"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify that no file is stored on the backend"
+      }
+    ]
+  },
+  {
+    "id": "TC003",
+    "title": "Inspection of Uploaded File with Head Sampling",
+    "description": "Verify that backend inspects an uploaded file using head sampling strategy with limit and seed, returning correct sample rows, inferred schema, and statistics.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Upload a valid data file"
+      },
+      {
+        "type": "action",
+        "description": "Configure sampling strategy to 'head' with a specific row limit and seed"
+      },
+      {
+        "type": "action",
+        "description": "Call /api/inspect endpoint with sampling parameters"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the sample rows returned correspond to the first N rows as per limit"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the inferred schema matches the data columns and types accurately"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify statistics such as null values count and cardinality per column are correct"
+      }
+    ]
+  },
+  {
+    "id": "TC004",
+    "title": "Inspection of Uploaded File with Random Sampling and Seed Determinism",
+    "description": "Verify that random sampling with a fixed seed produces consistent sample rows on multiple inspections.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Upload a valid data file"
+      },
+      {
+        "type": "action",
+        "description": "Configure sampling strategy to 'random' with a specific row limit and fixed seed"
+      },
+      {
+        "type": "action",
+        "description": "Invoke /api/inspect endpoint to get sample data"
+      },
+      {
+        "type": "assertion",
+        "description": "Capture the sample rows"
+      },
+      {
+        "type": "action",
+        "description": "Re-invoke /api/inspect endpoint with identical parameters"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the sample rows are identical to the previous response to confirm determinism"
+      }
+    ]
+  },
+  {
+    "id": "TC005",
+    "title": "Inspection Response Handling for Corrupted File",
+    "description": "Verify that submitting a corrupted or malformed data file to /api/inspect returns an appropriate error without crashing backend.",
+    "category": "error handling",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Upload a corrupted or partially invalid data file"
+      },
+      {
+        "type": "action",
+        "description": "Make an inspect request with any sampling strategy"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify that the backend returns an error status with descriptive error message"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify that the frontend displays the error message properly"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify no partial or invalid schema/sample data is returned"
+      }
+    ]
+  },
+  {
+    "id": "TC006",
+    "title": "Python Script Generation via OpenAI API Integration",
+    "description": "Verify that code generation endpoint /api/generate returns a valid Python analysis script using the configured OpenAI API and that script matches inspection results and user preferences.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "After successful inspection, trigger code generation with given preferences (visualization library, output dir)"
+      },
+      {
+        "type": "action",
+        "description": "Call /api/generate endpoint"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the returned script is valid Python syntax without errors"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the script content includes references to the inspected schema and chosen configurations"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the script preview panel in frontend matches the generated script"
+      }
+    ]
+  },
+  {
+    "id": "TC007",
+    "title": "Python Script Generation Fallback to Static Template",
+    "description": "Verify that when OpenAI API is unavailable, the backend falls back to a static template for script generation and returns a valid script.",
+    "category": "error handling",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Simulate OpenAI API failure or disable integration"
+      },
+      {
+        "type": "action",
+        "description": "Trigger code generation"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the backend returns a valid Python script based on the static template"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the returned script is usable and includes basic analysis structure"
+      }
+    ]
+  },
+  {
+    "id": "TC008",
+    "title": "Script Execution Streaming Logs and Artifact Collection",
+    "description": "Verify that executing the generated Python script via /api/execute streams real-time logs to frontend and produces expected artifact files like charts and HTML reports.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Provide valid execution configuration (visualization library, output directory, CPU/memory hints)"
+      },
+      {
+        "type": "action",
+        "description": "Trigger script execution via /api/execute"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify logs are streamed progressively to the frontend without long delays"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify that execution completes without errors"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify expected artifact files (plot images, HTML reports) are available and accessible via frontend"
+      }
+    ]
+  },
+  {
+    "id": "TC009",
+    "title": "Script Execution Failure Scenario and Error Handling",
+    "description": "Verify that when script execution encounters errors, logs stream errors in real-time and final failure status is correctly reflected on frontend with error details.",
+    "category": "error handling",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Modify generated script to induce a runtime error (e.g., syntax error or invalid operation)"
+      },
+      {
+        "type": "action",
+        "description": "Trigger script execution"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify logs contain error messages streamed progressively"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify frontend shows execution failure state with proper error feedback"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify no incomplete or misleading artifacts are shown"
+      }
+    ]
+  },
+  {
+    "id": "TC010",
+    "title": "UI State Transitions Through Workflow",
+    "description": "Verify frontend UI components transition through the expected states: idle → inspecting → generating → executing → succeeded/failure with appropriate user feedback and loading indicators.",
+    "category": "ui",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Start on File upload page (idle)"
+      },
+      {
+        "type": "action",
+        "description": "Upload file and initiate inspection"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify UI shows inspecting loading state and disables relevant controls"
+      },
+      {
+        "type": "action",
+        "description": "Upon inspection success, trigger code generation"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify UI shows generating loading state and then displays script preview"
+      },
+      {
+        "type": "action",
+        "description": "Configure and start script execution"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify UI shows executing loading state with live log streaming"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify UI transitions to succeeded or failure states appropriately at execution end"
+      }
+    ]
+  },
+  {
+    "id": "TC011",
+    "title": "Virtualized Sample Table Displays Large Data Efficiently",
+    "description": "Verify the Inspect results sample preview panel displays large sample datasets using virtualization, ensuring smooth scroll and low memory usage.",
+    "category": "performance",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Upload a large data file (e.g., 10,000+ rows)"
+      },
+      {
+        "type": "action",
+        "description": "Perform inspection with a large sample size"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the sample table renders rows responsively with smooth vertical scrolling"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify memory and CPU usage remains reasonable during navigation"
+      }
+    ]
+  },
+  {
+    "id": "TC012",
+    "title": "Accessibility Compliance of UI Controls and Navigation",
+    "description": "Verify all UI components including File chooser, Inspect results, Script preview, and Results gallery comply with ARIA standards and are fully operable via keyboard navigation.",
+    "category": "ui",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate through all main UI components using keyboard only (Tab, Shift+Tab, Enter, Arrow keys)"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify all interactive controls receive focus in logical order and are operable"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify ARIA roles and attributes are present and valid (using accessibility tools)"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify screen reader announces UI elements and state changes correctly"
+      }
+    ]
+  },
+  {
+    "id": "TC013",
+    "title": "Session State Persistence Across Browser Reloads",
+    "description": "Verify that session settings, including uploaded file information, sampling configurations, generated script, execution logs, and results persist across browser reloads.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Complete a full workflow: upload file, inspect, generate script, execute, and view results"
+      },
+      {
+        "type": "action",
+        "description": "Reload the browser page or restart frontend app"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify all previously configured settings and data are restored"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the user can continue working without loss of state"
+      }
+    ]
+  },
+  {
+    "id": "TC014",
+    "title": "Contract Tests for Frontend-Backend API Payload Compatibility",
+    "description": "Verify that frontend and backend payload schemas align for all typed API endpoints (/api/upload, /api/inspect, /api/generate, /api/execute) to prevent integration errors.",
+    "category": "integration",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Generate or obtain frontend API client types"
+      },
+      {
+        "type": "action",
+        "description": "Compare backend API response and request payload schemas against frontend type expectations"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify no schema mismatches exist and data types are consistent"
+      }
+    ]
+  },
+  {
+    "id": "TC015",
+    "title": "End-to-End User Flow Testing",
+    "description": "Verify the complete user journey from file upload through results gallery including all intermediate states, UI responses, and error handling scenarios.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to application URL"
+      },
+      {
+        "type": "action",
+        "description": "Upload a valid data file"
+      },
+      {
+        "type": "action",
+        "description": "Configure sampling and invoke inspection"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify sample and schema preview"
+      },
+      {
+        "type": "action",
+        "description": "Generate Python analysis script"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify script preview matches backend output"
+      },
+      {
+        "type": "action",
+        "description": "Configure execution settings and run script"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify streaming logs are shown"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify gallery shows correct visualizations and artifact links"
+      },
+      {
+        "type": "action",
+        "description": "Copy and download generated script"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify scripts match expected content and downloads succeed"
+      }
+    ]
+  }
+]

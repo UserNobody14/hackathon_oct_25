@@ -1,0 +1,105 @@
+{
+  "tech_stack": [
+    "TypeScript (frontend)",
+    "React 19",
+    "Bun 1.x",
+    "Tailwind CSS 4",
+    "shadcn/ui",
+    "Radix UI",
+    "Python 3.12",
+    "FastAPI",
+    "Uvicorn",
+    "pandas",
+    "numpy",
+    "pyarrow",
+    "plotly",
+    "uv (Python package manager)",
+    "Typer CLI",
+    "python-dotenv",
+    "OpenAI Python SDK"
+  ],
+  "features": [
+    {
+      "name": "Frontend HTTP client",
+      "description": "Typed API client for upload, inspect, generate, execute and artifact URLs.",
+      "files": [
+        "frontend/src/lib/api.ts"
+      ]
+    },
+    {
+      "name": "Frontend App shell",
+      "description": "Root app renders File page; simple SPA wiring and styles.",
+      "files": [
+        "frontend/src/App.tsx",
+        "frontend/src/index.html",
+        "frontend/src/frontend.tsx",
+        "frontend/src/index.css"
+      ]
+    },
+    {
+      "name": "Frontend pages",
+      "description": "Feature pages: File upload, Inspect results, Script preview, Results gallery.",
+      "files": [
+        "frontend/src/pages/File.tsx",
+        "frontend/src/pages/Inspect.tsx",
+        "frontend/src/pages/Script.tsx",
+        "frontend/src/pages/Results.tsx"
+      ]
+    },
+    {
+      "name": "Frontend Bun server",
+      "description": "Bun server serving index and proxying API to backend (runs on port 4371).",
+      "files": [
+        "frontend/src/index.tsx"
+      ]
+    },
+    {
+      "name": "Frontend build pipeline",
+      "description": "Custom Bun build with Tailwind plugin producing production assets in dist/.",
+      "files": [
+        "frontend/build.ts",
+        "frontend/bunfig.toml",
+        "frontend/package.json"
+      ]
+    },
+    {
+      "name": "Backend FastAPI server",
+      "description": "ASGI app exposing /api/upload, /api/inspect, /api/generate, /api/execute and static /artifacts with CORS enabled (default port 8099).",
+      "files": [
+        "backend/aida/server.py"
+      ]
+    },
+    {
+      "name": "Data inspector",
+      "description": "Detects file format, samples rows deterministically, infers schema and stats.",
+      "files": [
+        "backend/aida/inspector.py"
+      ]
+    },
+    {
+      "name": "Code generation",
+      "description": "Generates analysis Python script using OpenAI when configured, else static template.",
+      "files": [
+        "backend/aida/codegen.py",
+        "backend/aida/prompt_composer.py"
+      ]
+    },
+    {
+      "name": "Script executor",
+      "description": "Runs generated script with uv or python, captures stdout JSON or scans artifact directory.",
+      "files": [
+        "backend/aida/executor.py"
+      ]
+    },
+    {
+      "name": "CLI entrypoints",
+      "description": "Typer CLI and ASGI factory wiring for server start and usage.",
+      "files": [
+        "backend/aida/cli.py",
+        "backend/pyproject.toml"
+      ]
+    }
+  ]
+}
+
+

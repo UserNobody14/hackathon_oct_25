@@ -1,0 +1,16 @@
+{
+  "status": "commited",
+  "type": "frontend",
+  "scope": "codebase",
+  "localEndpoint": "http://localhost:4371",
+  "executionArgs": {
+    "projectName": "hackathon_oct_25",
+    "projectPath": "/Users/benjaminsobel/Code/hackathon_oct_25",
+    "testIds": [],
+    "additionalInstruction": "Use Bun for frontend; assume backend not required for static UI flows. Focus on File page renders, upload control presence, and API client basic call stubs. Save a concise markdown report.",
+    "envs": {
+      "API_KEY": "sk-user-dXW_rbcizJKaS8aWAQOascNGneBNV9DO2h2e4r6R1GUxO0CfWottFX1gvXOftL59wgfQ1VG8TJiR7gvdJT29cHSUUZIqKXxdx_uTJ8ryDc_525FOFa7VB_eg_u8TxlevV6k"
+    }
+  },
+  "proxy": "http://d3dbd416-256d-4f58-a4d8-e0b0f2537a3b:gCCbbFVhgXT5FuNptQBevFejvIfEeUQA@tun.testsprite.com:8080"
+}
