@@ -95,9 +95,19 @@ def generate_script(
     out_dir_path.mkdir(parents=True, exist_ok=True)
     script_path = out_dir_path / f"analysis_{ts}.py"
 
-    # Try AI generation if configured; otherwise fall back to static template
-    script_text: str
-    script_text = _try_generate_with_openai(inspect_payload, prefs) or SCRIPT_HEADER
+    # Generate script using OpenAI - no fallback to static template
+    script_text: str | None = _try_generate_with_openai(inspect_payload, prefs)
+    
+    if script_text is None:
+        raise RuntimeError(
+            "Failed to generate analysis script. Please ensure:\n"
+            "1. AIDA_MODEL_PROVIDER is set to 'openai' (or unset for default)\n"
+            "2. OPENAI_API_KEY is configured in your environment\n"
+            "3. The OpenAI API is accessible\n"
+            "4. Install openai package: pip install openai\n\n"
+            "No hardcoded fallback template is used to ensure genuine data insights."
+        )
+    
     script_path.write_text(script_text, encoding="utf-8")
     return {"scriptPath": str(script_path), "scriptText": script_text}
 
