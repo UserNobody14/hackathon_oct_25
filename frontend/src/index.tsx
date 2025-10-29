@@ -19,7 +19,7 @@ const server = serve({
     "/api/inspect": {
       async POST(req) {
         const body = await req.json();
-        const upstream = await fetch("http://localhost:8099/api/inspect", {
+        const upstream = await fetch("http://localhost:8001/api/inspect", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(body),
@@ -31,7 +31,7 @@ const server = serve({
     "/api/generate": {
       async POST(req) {
         const body = await req.json();
-        const upstream = await fetch("http://localhost:8099/api/generate", {
+        const upstream = await fetch("http://localhost:8001/api/generate", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(body),
@@ -43,10 +43,21 @@ const server = serve({
     "/api/execute": {
       async POST(req) {
         const body = await req.json();
-        const upstream = await fetch("http://localhost:8099/api/execute", {
+        const upstream = await fetch("http://localhost:8001/api/execute", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(body),
+        });
+        return upstream;
+      },
+    },
+
+    "/api/upload": {
+      async POST(req) {
+        const upstream = await fetch("http://localhost:8001/api/upload", {
+          method: "POST",
+          body: req.body,
+          headers: req.headers,
         });
         return upstream;
       },
