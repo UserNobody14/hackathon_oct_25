@@ -77,6 +77,14 @@ def _try_generate_with_openai(
     prefs_obj = AnalysisPrefs(
         viz=(prefs or {}).get("viz", "plotly"),
         engine=(prefs or {}).get("engine", "pandas"),
+        max_charts=(prefs or {}).get("max_charts", 8),
+        category_top_n=(prefs or {}).get("category_top_n", 30),
+        pairplot_max_numeric=(prefs or {}).get("pairplot_max_numeric", 6),
+        correlation_min_numeric=(prefs or {}).get("correlation_min_numeric", 3),
+        missingness_threshold=(prefs or {}).get("missingness_threshold", 0.05),
+        prefer_interactive=(prefs or {}).get("prefer_interactive", True),
+        target=(prefs or {}).get("target"),
+        time_col=(prefs or {}).get("time_col"),
     )
     messages = build_messages(inspect_payload or {}, prefs_obj)
 

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-import os
 import time
 from pathlib import Path
 
@@ -42,11 +41,50 @@ def generate(
     inspect_json: str = typer.Option(..., "--inspect", help="Path to inspect JSON"),
     viz: str = typer.Option("plotly", "--viz", help="plotly|seaborn"),
     engine: str = typer.Option("pandas", "--engine", help="pandas|polars (future)"),
+    max_charts: int = typer.Option(8, "--max-charts", help="Maximum number of charts"),
+    category_top_n: int = typer.Option(
+        30, "--category-top-n", help="Top N categories for bar charts"
+    ),
+    pairplot_max_numeric: int = typer.Option(
+        6, "--pairplot-max-numeric", help="Max numeric columns in pairwise plots"
+    ),
+    correlation_min_numeric: int = typer.Option(
+        3,
+        "--correlation-min-numeric",
+        help="Minimum numeric columns to include correlation heatmap",
+    ),
+    missingness_threshold: float = typer.Option(
+        0.05,
+        "--missingness-threshold",
+        help="Missingness threshold to include missingness chart",
+    ),
+    prefer_interactive: bool = typer.Option(
+        True,
+        "--prefer-interactive/--no-prefer-interactive",
+        help="Prefer interactive HTML charts when available",
+    ),
+    target: str | None = typer.Option(
+        None, "--target", help="Optional target column name"
+    ),
+    time_col: str | None = typer.Option(
+        None, "--time-col", help="Optional time column name"
+    ),
     out: str | None = typer.Option(None, "--out", help="Output script path"),
     json_out: bool = typer.Option(False, "--json", help="Emit JSON to stdout"),
 ) -> None:
     inspect_payload = json.loads(Path(inspect_json).read_text(encoding="utf-8"))
-    prefs = {"viz": viz, "engine": engine}
+    prefs = {
+        "viz": viz,
+        "engine": engine,
+        "max_charts": max_charts,
+        "category_top_n": category_top_n,
+        "pairplot_max_numeric": pairplot_max_numeric,
+        "correlation_min_numeric": correlation_min_numeric,
+        "missingness_threshold": missingness_threshold,
+        "prefer_interactive": prefer_interactive,
+        "target": target,
+        "time_col": time_col,
+    }
     if out is None:
         ts = int(time.time())
         out = f"scripts/analysis_{ts}.py"
@@ -82,6 +120,34 @@ def analyze(
     out_dir: str = typer.Option("artifacts", "--out-dir", help="Artifacts dir"),
     rows: int = typer.Option(1000, "--rows", help="Preview/sample row count"),
     seed: int = typer.Option(42, "--seed", help="Deterministic sampling seed"),
+    max_charts: int = typer.Option(8, "--max-charts", help="Maximum number of charts"),
+    category_top_n: int = typer.Option(
+        30, "--category-top-n", help="Top N categories for bar charts"
+    ),
+    pairplot_max_numeric: int = typer.Option(
+        6, "--pairplot-max-numeric", help="Max numeric columns in pairwise plots"
+    ),
+    correlation_min_numeric: int = typer.Option(
+        3,
+        "--correlation-min-numeric",
+        help="Minimum numeric columns to include correlation heatmap",
+    ),
+    missingness_threshold: float = typer.Option(
+        0.05,
+        "--missingness-threshold",
+        help="Missingness threshold to include missingness chart",
+    ),
+    prefer_interactive: bool = typer.Option(
+        True,
+        "--prefer-interactive/--no-prefer-interactive",
+        help="Prefer interactive HTML charts when available",
+    ),
+    target: str | None = typer.Option(
+        None, "--target", help="Optional target column name"
+    ),
+    time_col: str | None = typer.Option(
+        None, "--time-col", help="Optional time column name"
+    ),
     json_out: bool = typer.Option(False, "--json", help="Emit JSON to stdout"),
 ) -> None:
     tmp_inspect = Path(".aida/inspect.json")
@@ -98,7 +164,20 @@ def analyze(
 
     # Generate
     gen = generate_script(
-        inspect_payload, {"viz": viz, "engine": engine}, out_dir="scripts"
+        inspect_payload,
+        {
+            "viz": viz,
+            "engine": engine,
+            "max_charts": max_charts,
+            "category_top_n": category_top_n,
+            "pairplot_max_numeric": pairplot_max_numeric,
+            "correlation_min_numeric": correlation_min_numeric,
+            "missingness_threshold": missingness_threshold,
+            "prefer_interactive": prefer_interactive,
+            "target": target,
+            "time_col": time_col,
+        },
+        out_dir="scripts",
     )
 
     # Execute
@@ -118,4 +197,3 @@ def run() -> None:
 
 if __name__ == "__main__":
     run()
-
