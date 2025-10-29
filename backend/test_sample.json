@@ -1,0 +1,11 @@
+{
+  "inspect": {
+    "schema": {"col1": "int64", "col2": "string"},
+    "samplePreview": [{"col1": 1, "col2": "test"}],
+    "stats": {"rowCount": 100}
+  },
+  "prefs": {
+    "viz": "plotly",
+    "engine": "pandas"
+  }
+}
