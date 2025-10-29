@@ -30,7 +30,7 @@ def generate_script(
 
     # Generate script using OpenAI - no fallback to static template
     script_text: str | None = _try_generate_with_openai(inspect_payload, prefs)
-    
+
     if script_text is None:
         raise RuntimeError(
             "Failed to generate analysis script. Please ensure:\n"
@@ -40,7 +40,7 @@ def generate_script(
             "4. Install openai package: pip install openai\n\n"
             "No hardcoded fallback template is used to ensure genuine data insights."
         )
-    
+
     script_path.write_text(script_text, encoding="utf-8")
     return {"scriptPath": str(script_path), "scriptText": script_text}
 
@@ -57,14 +57,14 @@ def _try_generate_with_openai(
     provider = os.environ.get("AIDA_MODEL_PROVIDER", "openai").lower()
     model = os.environ.get("AIDA_MODEL", "gpt-4o-mini")
     api_key = os.environ.get("OPENAI_API_KEY")
-    
+
     # Check prerequisites
     if provider != "openai":
         return None
-    
+
     if not api_key:
         return None
-    
+
     if OpenAI is None:
         return None
 
@@ -81,10 +81,16 @@ def _try_generate_with_openai(
         category_top_n=(prefs or {}).get("category_top_n", 30),
         pairplot_max_numeric=(prefs or {}).get("pairplot_max_numeric", 6),
         correlation_min_numeric=(prefs or {}).get("correlation_min_numeric", 3),
+        top_corr_pairs=(prefs or {}).get("top_corr_pairs", 5),
         missingness_threshold=(prefs or {}).get("missingness_threshold", 0.05),
         prefer_interactive=(prefs or {}).get("prefer_interactive", True),
         target=(prefs or {}).get("target"),
         time_col=(prefs or {}).get("time_col"),
+        geospatial_enabled=(prefs or {}).get("geospatial_enabled", True),
+        lat_col=(prefs or {}).get("lat_col"),
+        lon_col=(prefs or {}).get("lon_col"),
+        location_col=(prefs or {}).get("location_col"),
+        geo_scope=(prefs or {}).get("geo_scope"),
     )
     messages = build_messages(inspect_payload or {}, prefs_obj)
 

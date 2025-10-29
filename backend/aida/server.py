@@ -57,10 +57,16 @@ class GenerationPreferences(BaseModel):
     category_top_n: int = 30
     pairplot_max_numeric: int = 6
     correlation_min_numeric: int = 3
+    top_corr_pairs: int = 5
     missingness_threshold: float = 0.05
     prefer_interactive: bool = True
     target: str | None = None
     time_col: str | None = None
+    geospatial_enabled: bool = True
+    lat_col: str | None = None
+    lon_col: str | None = None
+    location_col: str | None = None
+    geo_scope: str | None = None
 
 
 class GenerateRequest(BaseModel):

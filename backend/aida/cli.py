@@ -63,11 +63,25 @@ def generate(
         "--prefer-interactive/--no-prefer-interactive",
         help="Prefer interactive HTML charts when available",
     ),
+    top_corr_pairs: int = typer.Option(
+        5, "--top-corr-pairs", help="Top correlated pairs to plot"
+    ),
+    geospatial_enabled: bool = typer.Option(
+        True, "--geo/--no-geo", help="Enable geospatial charts when columns available"
+    ),
     target: str | None = typer.Option(
         None, "--target", help="Optional target column name"
     ),
     time_col: str | None = typer.Option(
         None, "--time-col", help="Optional time column name"
+    ),
+    lat_col: str | None = typer.Option(None, "--lat-col", help="Latitude column name"),
+    lon_col: str | None = typer.Option(None, "--lon-col", help="Longitude column name"),
+    location_col: str | None = typer.Option(
+        None, "--location-col", help="Location code column (e.g., country/ISO/state)"
+    ),
+    geo_scope: str | None = typer.Option(
+        None, "--geo-scope", help="Plotly geo scope (e.g., world, usa)"
     ),
     out: str | None = typer.Option(None, "--out", help="Output script path"),
     json_out: bool = typer.Option(False, "--json", help="Emit JSON to stdout"),
@@ -82,8 +96,14 @@ def generate(
         "correlation_min_numeric": correlation_min_numeric,
         "missingness_threshold": missingness_threshold,
         "prefer_interactive": prefer_interactive,
+        "top_corr_pairs": top_corr_pairs,
+        "geospatial_enabled": geospatial_enabled,
         "target": target,
         "time_col": time_col,
+        "lat_col": lat_col,
+        "lon_col": lon_col,
+        "location_col": location_col,
+        "geo_scope": geo_scope,
     }
     if out is None:
         ts = int(time.time())
@@ -142,11 +162,25 @@ def analyze(
         "--prefer-interactive/--no-prefer-interactive",
         help="Prefer interactive HTML charts when available",
     ),
+    top_corr_pairs: int = typer.Option(
+        5, "--top-corr-pairs", help="Top correlated pairs to plot"
+    ),
+    geospatial_enabled: bool = typer.Option(
+        True, "--geo/--no-geo", help="Enable geospatial charts when columns available"
+    ),
     target: str | None = typer.Option(
         None, "--target", help="Optional target column name"
     ),
     time_col: str | None = typer.Option(
         None, "--time-col", help="Optional time column name"
+    ),
+    lat_col: str | None = typer.Option(None, "--lat-col", help="Latitude column name"),
+    lon_col: str | None = typer.Option(None, "--lon-col", help="Longitude column name"),
+    location_col: str | None = typer.Option(
+        None, "--location-col", help="Location code column (e.g., country/ISO/state)"
+    ),
+    geo_scope: str | None = typer.Option(
+        None, "--geo-scope", help="Plotly geo scope (e.g., world, usa)"
     ),
     json_out: bool = typer.Option(False, "--json", help="Emit JSON to stdout"),
 ) -> None:
@@ -174,8 +208,14 @@ def analyze(
             "correlation_min_numeric": correlation_min_numeric,
             "missingness_threshold": missingness_threshold,
             "prefer_interactive": prefer_interactive,
+            "top_corr_pairs": top_corr_pairs,
+            "geospatial_enabled": geospatial_enabled,
             "target": target,
             "time_col": time_col,
+            "lat_col": lat_col,
+            "lon_col": lon_col,
+            "location_col": location_col,
+            "geo_scope": geo_scope,
         },
         out_dir="scripts",
     )
