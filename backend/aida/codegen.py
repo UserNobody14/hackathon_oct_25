@@ -48,11 +48,24 @@ def generate_script(
 def _try_generate_with_openai(
     inspect_payload: dict, prefs: Optional[dict]
 ) -> Optional[str]:
+    """
+    Generate analysis script using OpenAI API.
+    Returns None if configuration is missing or generation fails.
+    Caller should handle None by raising appropriate error.
+    """
     load_dotenv()
     provider = os.environ.get("AIDA_MODEL_PROVIDER", "openai").lower()
     model = os.environ.get("AIDA_MODEL", "gpt-4o-mini")
     api_key = os.environ.get("OPENAI_API_KEY")
-    if provider != "openai" or not api_key or OpenAI is None:
+    
+    # Check prerequisites
+    if provider != "openai":
+        return None
+    
+    if not api_key:
+        return None
+    
+    if OpenAI is None:
         return None
 
     # Compose messages using prompt_composer
@@ -87,4 +100,5 @@ def _try_generate_with_openai(
                     content = rest
         return content
     except Exception:
+        # Return None so caller can provide detailed error
         return None
