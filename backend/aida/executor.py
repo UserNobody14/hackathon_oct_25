@@ -4,15 +4,6 @@ import json
 import os
 import subprocess
 from pathlib import Path
-from typing import Iterable
-
-
-def _iter_html_artifacts(output_dir: Path) -> list[dict[str, str]]:
-    artifacts: list[dict[str, str]] = []
-    for path in output_dir.glob("*.html"):
-        title = path.stem.replace("_", " ").title()
-        artifacts.append({"type": "html", "path": str(path), "title": title})
-    return artifacts
 
 
 def execute_script(
