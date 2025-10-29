@@ -48,14 +48,21 @@ def execute_script(
         check=False,
     )
 
-    # Try to parse artifacts from script stdout; fallback to scanning dir
-    artifacts: list[dict]
+    # Parse artifacts from script stdout - no fallback to directory scanning
+    artifacts: list[dict] = []
     try:
         last_line = proc.stdout.strip().splitlines()[-1] if proc.stdout else ""
         parsed = json.loads(last_line)
         artifacts = parsed.get("artifacts", []) if isinstance(parsed, dict) else []
-    except Exception:
-        artifacts = _iter_html_artifacts(output_dir)
+    except Exception as e:
+        # No fallback - require proper JSON output from generated scripts
+        error_msg = (
+            f"Generated script did not produce valid artifacts JSON output.\n"
+            f"Expected last line of stdout to be JSON with 'artifacts' array.\n"
+            f"Parse error: {e}\n"
+            f"Script stdout: {proc.stdout[:500] if proc.stdout else '(empty)'}"
+        )
+        raise RuntimeError(error_msg)
 
     result = {
         "returncode": proc.returncode,
